@@ -14,4 +14,12 @@ public class SeckillApplicationTests {
 		System.out.println("start success");
 	}
 
+    @Test
+    public void insert() {
+
+	    System.out.println("start success");
+
+    }
+
+
 }

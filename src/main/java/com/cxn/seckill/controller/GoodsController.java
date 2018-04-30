@@ -109,10 +109,10 @@ public class GoodsController {
 
         log.info("用户：" + user + "，跳转到商品详情页。。。");
         GoodsDetailVo goodsDetailVo = new GoodsDetailVo();
-        goodsDetailVo.setGoodsVo(goods);
+        goodsDetailVo.setGoods(goods);
         goodsDetailVo.setRemainSeconds(remainSeconds);
         goodsDetailVo.setSeckillStatus(seckillStatus);
-        goodsDetailVo.setSeckillUser(user);
+        goodsDetailVo.setUser(user);
 
         return Result.success(goodsDetailVo);
     }

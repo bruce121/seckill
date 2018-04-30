@@ -12,10 +12,7 @@ import com.cxn.seckill.vo.GoodsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @program: seckill
@@ -37,33 +34,31 @@ public class SeckillController {
     @Autowired
     private SeckillService seckillService;
 
-    @RequestMapping("/do_seckill")
-    public String doSeckill(Model model, SeckillUser seckillUser, @RequestParam("goodsId") long goodsId){
+    @RequestMapping(value = "/do_seckill", method = {RequestMethod.POST})
+    @ResponseBody
+    public Result<OrderInfo> doSeckill(Model model, SeckillUser seckillUser, @RequestParam("goodsId") long goodsId){
 
-        model.addAttribute("user",seckillUser);
         if (seckillUser == null) {
-            return "login";
+            return Result.error(CodeMsg.SESSION_ERROR);
         }
         // 判断库存
         GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
         Integer stockCount = goods.getStockCount();
         if (stockCount<=0) {
-            model.addAttribute("errmsg", CodeMsg.SECKILL_ERROR);
-            return "seckill_fail";
+            return Result.error(CodeMsg.SECKILL_ERROR);
         }
 
-         SeckillOrder seckillOrder =  orderService.getSeckillOrderByUserIdGoodsId(seckillUser.getId(), goodsId);
+        // 判断是否是重复秒杀
+        SeckillOrder seckillOrder =  orderService.getSeckillOrderByUserIdGoodsId(seckillUser.getId(), goodsId);
 
         if (seckillOrder != null) {
-            model.addAttribute("errmsg", CodeMsg.REPEATE_SECKILL);
-            return "seckill_fail";
+            return Result.error(CodeMsg.REPEATE_SECKILL);
         }
 
         // 减库存，下订单，写入秒杀订单
         OrderInfo orderInfo = seckillService.seckill(seckillUser, goods);
-        model.addAttribute("orderInfo", orderInfo);
-        model.addAttribute("goods", goods);
-        return "order_detail";
+
+        return Result.success(orderInfo);
     }
 
 

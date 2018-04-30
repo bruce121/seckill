@@ -22,6 +22,7 @@ public class CodeMsg {
     public static CodeMsg MOBILE_ERROR = new CodeMsg(500213, "手机号格式错误");
     public static CodeMsg MOBILE_NOT_EXIST = new CodeMsg(500214, "用户不存在");
     public static CodeMsg PASSWORD_ERROR = new CodeMsg(500215, "密码错误");
+    public static CodeMsg SESSION_ERROR = new CodeMsg(500216,"session失效");
 
     // 商品模块 500300
 

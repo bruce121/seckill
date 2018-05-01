@@ -26,6 +26,6 @@ public interface OrderDao {
     long insertSeckillOrder(SeckillOrder seckillOrder);
 
 
-
-
+    @Select("select * from order_info where id = #{orderId}")
+    OrderInfo getOrderById(long orderId);
 }

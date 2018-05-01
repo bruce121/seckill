@@ -27,6 +27,7 @@ public class CodeMsg {
     // 商品模块 500300
 
     // 订单模块 500400
+    public static CodeMsg ORDER_NOT_EXIST = new CodeMsg(500400, "订单不存在");
 
     // 秒杀模块 500500
     public static CodeMsg SECKILL_ERROR = new CodeMsg(500500, "商品已经秒杀完毕");

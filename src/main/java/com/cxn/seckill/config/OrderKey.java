@@ -11,4 +11,6 @@ public class OrderKey extends BasePrefix {
     private OrderKey(int expireSeconds, String prefix) {
         super(expireSeconds, prefix);
     }
+
+    public static OrderKey getOrderSeckillOrderByUidGid = new OrderKey(0,"seckillUidGid");
 }

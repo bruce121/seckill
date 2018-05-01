@@ -1,10 +1,12 @@
 package com.cxn.seckill.service.impl;
 
+import com.cxn.seckill.config.OrderKey;
 import com.cxn.seckill.dao.OrderDao;
 import com.cxn.seckill.model.OrderInfo;
 import com.cxn.seckill.model.SeckillOrder;
 import com.cxn.seckill.model.SeckillUser;
 import com.cxn.seckill.service.OrderService;
+import com.cxn.seckill.service.RedisService;
 import com.cxn.seckill.vo.GoodsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,10 +26,16 @@ import java.util.Date;
 public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderDao orderDao;
+    @Autowired
+    private RedisService redisService;
 
     @Override
     public SeckillOrder getSeckillOrderByUserIdGoodsId(Long userId, long goodsId) {
-        return orderDao.getSeckillOrderByUserIdGoodsId(userId, goodsId);
+
+        // 在判断是否有同一个用户重复秒杀订单，直接从redis中取
+        return redisService.get(OrderKey.getOrderSeckillOrderByUidGid, "" + userId + "_" + goodsId, SeckillOrder.class);
+
+        //return orderDao.getSeckillOrderByUserIdGoodsId(userId, goodsId);
     }
 
     @Transactional
@@ -52,6 +60,14 @@ public class OrderServiceImpl implements OrderService {
         seckillOrder.setUserId(user.getId());
         long seckillOrderId = orderDao.insertSeckillOrder(seckillOrder);
 
+        // 秒杀订单创建成功之后，将订单信息放入缓存
+        redisService.set(OrderKey.getOrderSeckillOrderByUidGid, "" + user.getId() + "_" + goods.getId(), seckillOrder);
+
         return orderInfo;
+    }
+
+    @Override
+    public OrderInfo getOrderById(long orderId) {
+        return orderDao.getOrderById(orderId);
     }
 }

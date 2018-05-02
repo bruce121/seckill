@@ -108,6 +108,13 @@
 			<!--&lt;!&ndash;<scope>provided</scope>&ndash;&gt;-->
 		<!--</dependency>-->
 
+		<!-- sql解析工具 -->
+		<dependency>
+			<groupId>com.github.jsqlparser</groupId>
+			<artifactId>jsqlparser</artifactId>
+			<version>1.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

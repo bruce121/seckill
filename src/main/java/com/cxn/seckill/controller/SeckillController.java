@@ -1,10 +1,8 @@
 package com.cxn.seckill.controller;
 
-import com.cxn.seckill.config.UserKey;
 import com.cxn.seckill.model.OrderInfo;
 import com.cxn.seckill.model.SeckillOrder;
 import com.cxn.seckill.model.SeckillUser;
-import com.cxn.seckill.model.User;
 import com.cxn.seckill.result.CodeMsg;
 import com.cxn.seckill.result.Result;
 import com.cxn.seckill.service.*;
@@ -60,6 +58,5 @@ public class SeckillController {
 
         return Result.success(orderInfo);
     }
-
 
 }

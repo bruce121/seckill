@@ -15,11 +15,11 @@ import java.util.Objects;
 import java.util.Properties;
 
 /**
+ *
  * 性能分析拦截器，用于输出每条SQL语句及其执行时间
  * 1.可设置maxTime，用于在sql执行超过maxTime后抛出异常
  * 2.可设置performanceSwitch，用于控制该拦截器是否使用
  *
- * @Date 2018-04-02
  */
 @Component
 @Intercepts({@Signature(type = StatementHandler.class, method = "query", args = {Statement.class, ResultHandler.class}),

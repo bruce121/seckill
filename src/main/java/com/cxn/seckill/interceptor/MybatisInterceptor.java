@@ -1,6 +1,6 @@
 package com.cxn.seckill.interceptor;
 
-import com.cxn.seckill.annotation.NoSqlInterceptor;
+import com.cxn.seckill.annotation.SqlNotInterceptor;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -26,9 +26,8 @@ import java.util.Properties;
 
 /**
  * mybatis拦截器，拦截UPDATE DELETE，防止全表更新
- * 1. @NoSqlInterceptor标识某个方法，跳过mybatis拦截器
+ * 1. @SqlNotInterceptor标识某个方法，跳过mybatis拦截器
  *
- * @CreateDate: 2018/3/26 17:39
  **/
 @Component
 @Intercepts({@Signature(method = "prepare", type = StatementHandler.class, args = {Connection.class, Integer.class})})
@@ -117,7 +116,7 @@ public class MybatisInterceptor implements Interceptor {
                 Method[] methods = Class.forName(className).getMethods();
                 for (Method method : methods) {
                     if (method.getName().equals(methodName)) {
-                        annotation = method.getAnnotation(NoSqlInterceptor.class);
+                        annotation = method.getAnnotation(SqlNotInterceptor.class);
                         break;
                     }
                 }

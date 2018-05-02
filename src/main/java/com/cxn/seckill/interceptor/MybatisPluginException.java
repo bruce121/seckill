@@ -1,7 +1,8 @@
 package com.cxn.seckill.interceptor;
 
 /**
- * 业务处理异常
+ *
+ * 自定义mybatis插件异常
  *
  */
 public class MybatisPluginException extends RuntimeException {

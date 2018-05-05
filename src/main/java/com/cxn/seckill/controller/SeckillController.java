@@ -1,7 +1,7 @@
 package com.cxn.seckill.controller;
 
 import com.cxn.seckill.config.GoodsKey;
-import com.cxn.seckill.model.OrderInfo;
+import com.cxn.seckill.config.SeckillKey;
 import com.cxn.seckill.model.SeckillOrder;
 import com.cxn.seckill.model.SeckillUser;
 import com.cxn.seckill.rabbitmq.MQSender;
@@ -9,6 +9,8 @@ import com.cxn.seckill.rabbitmq.SeckillMessage;
 import com.cxn.seckill.result.CodeMsg;
 import com.cxn.seckill.result.Result;
 import com.cxn.seckill.service.*;
+import com.cxn.seckill.util.MD5Util;
+import com.cxn.seckill.util.UUIDUtil;
 import com.cxn.seckill.vo.GoodsVo;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,9 +68,17 @@ public class SeckillController implements InitializingBean {
     @Autowired
     private MQSender mqSender;
 
-    @RequestMapping(value = "/do_seckill", method = {RequestMethod.POST})
+    @RequestMapping(value = "/{path}/do_seckill", method = {RequestMethod.POST})
     @ResponseBody
-    public Result<Long> doSeckill(Model model, SeckillUser seckillUser, @RequestParam("goodsId") long goodsId) {
+    public Result<Long> doSeckill(Model model,@PathVariable("path") String path, SeckillUser seckillUser, @RequestParam("goodsId") long goodsId) {
+
+        // 检查path
+        boolean check = seckillService.checkPath(seckillUser, path, goodsId );
+
+        if (!check) {
+
+            return Result.error(CodeMsg.REQUEST_ILLEGAL);
+        }
 
         if (seckillUser == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
@@ -145,5 +154,14 @@ public class SeckillController implements InitializingBean {
         return Result.success(result);
     }
 
+    @RequestMapping(value="/path",method = {RequestMethod.GET})
+    @ResponseBody
+    public Result<String> seckillPath (SeckillUser user, @RequestParam("goodsId") long goodsId){
+        if (user == null) {
+            return Result.error(CodeMsg.SESSION_ERROR);
+        }
+        String path = seckillService.createSeckillPath(user, goodsId);
+          return Result.success(path);
+    }
 
 }

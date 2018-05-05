@@ -1,12 +1,6 @@
 package com.cxn.seckill.service;
 
-import com.cxn.seckill.dao.GoodsDao;
-import com.cxn.seckill.dao.UserDao;
-import com.cxn.seckill.model.User;
 import com.cxn.seckill.vo.GoodsVo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,5 +17,5 @@ public interface GoodsService {
 
     GoodsVo getGoodsVoByGoodsId(long goodsId);
 
-    void reduceStock(GoodsVo goods);
+    boolean reduceStock(GoodsVo goods);
 }

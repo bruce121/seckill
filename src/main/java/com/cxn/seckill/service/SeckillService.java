@@ -12,4 +12,6 @@ import com.cxn.seckill.vo.GoodsVo; /**
  */
 public interface SeckillService {
     OrderInfo seckill(SeckillUser seckillUser, GoodsVo goods);
+
+    long getSeckillResult(Long id, Long goodsId);
 }

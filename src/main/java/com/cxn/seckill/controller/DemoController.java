@@ -1,7 +1,9 @@
 package com.cxn.seckill.controller;
 
 import com.cxn.seckill.config.UserKey;
+import com.cxn.seckill.model.SeckillUser;
 import com.cxn.seckill.model.User;
+import com.cxn.seckill.rabbitmq.MQSender;
 import com.cxn.seckill.result.CodeMsg;
 import com.cxn.seckill.result.Result;
 import com.cxn.seckill.service.RedisService;
@@ -29,6 +31,9 @@ public class DemoController {
 
     @Autowired
     private RedisService redisService;
+
+    @Autowired
+    private MQSender mqSender;
 
     @RequestMapping("/hello")
     @ResponseBody
@@ -80,6 +85,17 @@ public class DemoController {
 
        boolean boo = redisService.set(UserKey.getById,"key1", user);
         return Result.success(boo);
+    }
+
+    @RequestMapping("/rabbitmq/send")
+    @ResponseBody
+    public Result<Boolean> amqp(){
+        SeckillUser seckillUser = new SeckillUser();
+        seckillUser.setId(8L);
+        seckillUser.setPassword("password");
+        seckillUser.setNickname("nickname");
+        mqSender.send(seckillUser);
+        return Result.success(true);
     }
 
 }

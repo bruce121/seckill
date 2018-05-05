@@ -16,7 +16,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @program: seckill
@@ -41,8 +44,29 @@ public class SeckillController implements InitializingBean {
     @Autowired
     private RedisService redisService;
 
+    private Map<Long, Boolean> localOverMap = new ConcurrentHashMap<>();
+
+    /**
+     * 系统初始化，当项目启动的时候加载秒杀商品的库存到redis中
+     *
+     * @throws Exception
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        // 预先将秒杀库存信息加载到redis中
+        List<GoodsVo> goodsList = goodsService.listGoodsVo();
+        if (goodsList == null) {
+            return;
+        }
+        for (GoodsVo goodsVo : goodsList) {
+            redisService.set(GoodsKey.getSeckillGoodsStock, "" + goodsVo.getId(), goodsVo.getStockCount());
+            localOverMap.put(goodsVo.getId(),false);
+        }
+    }
+
     @Autowired
     private MQSender mqSender;
+
     @RequestMapping(value = "/do_seckill", method = {RequestMethod.POST})
     @ResponseBody
     public Result<Long> doSeckill(Model model, SeckillUser seckillUser, @RequestParam("goodsId") long goodsId) {
@@ -51,10 +75,17 @@ public class SeckillController implements InitializingBean {
             return Result.error(CodeMsg.SESSION_ERROR);
         }
 
+        // 使用内存标记减少redis访问
+        Boolean isOver = localOverMap.get(goodsId);
+        if (isOver) {
+            return Result.error(CodeMsg.SECKILL_OVER);
+        }
+
         // 预减库存
         Long stock = redisService.decr(GoodsKey.getSeckillGoodsStock, "" + goodsId);
 
         if (stock < 0) {
+            localOverMap.put(goodsId, true);
             return Result.error(CodeMsg.SECKILL_OVER);
         }
 
@@ -73,24 +104,24 @@ public class SeckillController implements InitializingBean {
         // 返回下单成功，秒杀排队中
         return Result.success(0L);
         /**
-        // 判断库存
-        GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
-        Integer stockCount = goods.getStockCount();
-        if (stockCount <= 0) {
-            return Result.error(CodeMsg.SECKILL_OVER);
-        }
+         // 判断库存
+         GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
+         Integer stockCount = goods.getStockCount();
+         if (stockCount <= 0) {
+         return Result.error(CodeMsg.SECKILL_OVER);
+         }
 
-        // 判断是否是重复秒杀
-        SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdGoodsId(seckillUser.getId(), goodsId);
+         // 判断是否是重复秒杀
+         SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdGoodsId(seckillUser.getId(), goodsId);
 
-        if (seckillOrder != null) {
-            return Result.error(CodeMsg.REPEATE_SECKILL);
-        }
+         if (seckillOrder != null) {
+         return Result.error(CodeMsg.REPEATE_SECKILL);
+         }
 
-        // 减库存，下订单，写入秒杀订单
-        OrderInfo orderInfo = seckillService.seckill(seckillUser, goods);
+         // 减库存，下订单，写入秒杀订单
+         OrderInfo orderInfo = seckillService.seckill(seckillUser, goods);
 
-        return Result.success(orderInfo);
+         return Result.success(orderInfo);
          */
     }
 
@@ -98,13 +129,14 @@ public class SeckillController implements InitializingBean {
      * 成功 ：返回订单id -> orderId
      * 失败 ：返回-1
      * 排队中：返回0
+     *
      * @param user
      * @param goodsId
      * @return
      */
-    @RequestMapping(value="/result", method = {RequestMethod.GET})
+    @RequestMapping(value = "/result", method = {RequestMethod.GET})
     @ResponseBody
-    public Result<Long> seckillResult(SeckillUser user, @RequestParam("goodsId") Long goodsId){
+    public Result<Long> seckillResult(SeckillUser user, @RequestParam("goodsId") Long goodsId) {
         if (user == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
         }
@@ -112,20 +144,6 @@ public class SeckillController implements InitializingBean {
         long result = seckillService.getSeckillResult(user.getId(), goodsId);
         return Result.success(result);
     }
-    /**
-     * 系统初始化，当项目启动的时候加载秒杀商品的库存到redis中
-     * @throws Exception
-     */
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        // 预先将秒杀库存信息加载到redis中
-        List<GoodsVo> goodsList = goodsService.listGoodsVo();
-        if (goodsList == null) {
-            return;
-        }
-        for (GoodsVo goodsVo : goodsList) {
-            redisService.set(GoodsKey.getSeckillGoodsStock,"" + goodsVo.getId(), goodsVo.getStockCount());
-        }
-    }
+
 
 }

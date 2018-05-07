@@ -1,5 +1,7 @@
 package com.cxn.seckill.controller;
 
+import com.cxn.seckill.annotation.AccessLimit;
+import com.cxn.seckill.config.AccessKey;
 import com.cxn.seckill.config.GoodsKey;
 import com.cxn.seckill.config.SeckillKey;
 import com.cxn.seckill.model.SeckillOrder;
@@ -12,6 +14,7 @@ import com.cxn.seckill.service.*;
 import com.cxn.seckill.util.MD5Util;
 import com.cxn.seckill.util.UUIDUtil;
 import com.cxn.seckill.vo.GoodsVo;
+import com.rabbitmq.client.AMQP;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -19,6 +22,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
@@ -160,10 +164,24 @@ public class SeckillController implements InitializingBean {
 
     @RequestMapping(value = "/path", method = {RequestMethod.GET})
     @ResponseBody
-    public Result<String> seckillPath(SeckillUser user, @RequestParam("goodsId") long goodsId, @RequestParam("verifyCode") int verifyCode) {
+    @AccessLimit(seconds=5, maxCount=10, needLogin = true)
+    public Result<String> getSeckillPath(HttpServletRequest request, SeckillUser user, @RequestParam("goodsId") long goodsId, @RequestParam(value = "verifyCode", defaultValue = "1") int verifyCode) {
         if (user == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
         }
+
+        //// 查询访问次数（代码转移到注解拦截器中）
+        //String requestURI = request.getRequestURI();
+        //String key = requestURI + "_" + user.getId();
+        //Integer count = redisService.get(AccessKey.access, key, Integer.class);
+        //if (count == null) {
+        //    redisService.set(AccessKey.access, key, 1);
+        //}else if (count < 5){
+        //    redisService.incr(AccessKey.access, key);
+        //}else{
+        //    return Result.error(CodeMsg.ACCESS_LIMIT_REACHED);
+        //}
+
         boolean check = seckillService.checkVerifyCode(user, goodsId, verifyCode);
         if (!check) {
             return Result.error(CodeMsg.REQUEST_ILLEGAL);

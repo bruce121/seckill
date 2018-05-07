@@ -12,5 +12,4 @@ public class SeckillApplication {
         SpringApplication.run(SeckillApplication.class, args);
     }
 
-
 }

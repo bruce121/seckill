@@ -18,6 +18,8 @@ public class SeckillKey extends BasePrefix {
     }
 
 
+
     public static SeckillKey getSeckillPath = new SeckillKey(10, "seckillPath");
+    public static SeckillKey getMiaoshaVerifyCode = new SeckillKey(60, "verifyCode");
 
 }

@@ -48,8 +48,13 @@
                         <button class="btn btn-primary btn-block" type="submit" id="buyButton">立即秒杀</button>
                         <input type="hidden" name="goodsId"  id="goodsId" />
                     </form>-->
-                <button class="btn btn-primary btn-block" type="button" id="buyButton" onclick="getSeckillPath()">立即秒杀
-                </button>
+                <div class="row">
+                    <div class="form-inline">
+                        <img id="verifyCodeImg" width="120" height="32"  style="display:none" onclick="refreshVerifyCode()"/>
+                        <input id="verifyCode"  class="form-control" style="display:none"/>
+                        <button class="btn btn-primary" type="button" id="buyButton"onclick="getSeckillPath()">立即秒杀</button>
+                    </div>
+                </div>
                 <input type="hidden" name="goodsId" id="goodsId"/>
             </td>
         </tr>
@@ -75,7 +80,7 @@
             url: "/seckill/result",
             type: "get",
             data: {
-                goodsId:goodsId,
+                goodsId: goodsId,
             },
             success: function (data) {
 
@@ -83,16 +88,16 @@
                     var result = data.data;
                     if (result < 0) {
                         layer.msg("秒杀失败～")
-                    }else if (result == 0){// ji
+                    } else if (result == 0) {// ji
                         setTimeout(function () {
                             getSeckillResult(goodsId);
                         }, 200);
-                    }else{
-                        layer.confirm("恭喜你，秒杀成功！查看订单？",{btn:["确定","取消"]},
-                            function(){
-                                window.location.href="/order_detail.htm?orderId="+result;
+                    } else {
+                        layer.confirm("恭喜你，秒杀成功！查看订单？", {btn: ["确定", "取消"]},
+                            function () {
+                                window.location.href = "/order_detail.htm?orderId=" + result;
                             },
-                            function(){
+                            function () {
                                 layer.closeAll();
                             }
                         );
@@ -108,33 +113,34 @@
 
     }
 
-    function getSeckillPath(){
+    function getSeckillPath() {
         var goodsId = $("#goodsId").val();
         g_showLoading();
         $.ajax({
-            url:"/seckill/path",
-            type:"GET",
-            data:{
-                goodsId:goodsId,
-                verifyCode:$("#verifyCode").val()
+            url: "/seckill/path",
+            type: "GET",
+            data: {
+                goodsId: goodsId,
+                verifyCode: $("#verifyCode").val()
             },
-            success:function(data){
-                if(data.code == 0){
+            success: function (data) {
+                if (data.code == 0) {
                     var path = data.data;
                     doSeckill(path);
-                }else{
+                } else {
                     layer.msg(data.msg);
                 }
             },
-            error:function(){
+            error: function () {
                 layer.msg("客户端请求有误");
             }
         });
     }
+
     function doSeckill(path) {
 
         $.ajax({
-            url: "/seckill/"+path+"/do_seckill",
+            url: "/seckill/" + path + "/do_seckill",
             type: "POST",
             data: {
                 goodsId: $("#goodsId").val(),
@@ -214,11 +220,19 @@
                 clearTimeout(timeout);
             }
             $("#miaoshaTip").html("秒杀进行中");
-        } else {//秒杀已经结束
+
+            $("#verifyCodeImg").attr("src", "/seckill/verifyCode?goodsId="+$("#goodsId").val());
+            $("#verifyCodeImg").show();
+            $("#verifyCode").show();
+        }else{//秒杀已经结束
             $("#buyButton").attr("disabled", true);
             $("#miaoshaTip").html("秒杀已经结束");
+            $("#verifyCodeImg").hide();
+            $("#verifyCode").hide();
         }
     }
-
+    function refreshVerifyCode(){
+        $("#verifyCodeImg").attr("src", "/seckill/verifyCode?goodsId="+$("#goodsId").val()+"&timestamp="+new Date().getTime());
+    }
 </script>
 </html>

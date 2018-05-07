@@ -3,7 +3,11 @@ package com.cxn.seckill.service;
 import com.cxn.seckill.model.OrderInfo;
 import com.cxn.seckill.model.SeckillOrder;
 import com.cxn.seckill.model.SeckillUser;
-import com.cxn.seckill.vo.GoodsVo; /**
+import com.cxn.seckill.vo.GoodsVo;
+
+import java.awt.image.BufferedImage;
+
+/**
  * @program: seckill
  * @description: ${description}
  * @author: cxn
@@ -18,4 +22,8 @@ public interface SeckillService {
     String createSeckillPath(SeckillUser user, long goodsId);
 
     boolean checkPath(SeckillUser seckillUser, String path, long goodsId);
+
+    BufferedImage createVerifyCode(SeckillUser user, long goodsId);
+
+    boolean checkVerifyCode(SeckillUser user, long goodsId, int verifyCode);
 }

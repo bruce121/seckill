@@ -18,6 +18,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,7 +65,7 @@ public class SeckillController implements InitializingBean {
         }
         for (GoodsVo goodsVo : goodsList) {
             redisService.set(GoodsKey.getSeckillGoodsStock, "" + goodsVo.getId(), goodsVo.getStockCount());
-            localOverMap.put(goodsVo.getId(),false);
+            localOverMap.put(goodsVo.getId(), false);
         }
     }
 
@@ -70,10 +74,10 @@ public class SeckillController implements InitializingBean {
 
     @RequestMapping(value = "/{path}/do_seckill", method = {RequestMethod.POST})
     @ResponseBody
-    public Result<Long> doSeckill(Model model,@PathVariable("path") String path, SeckillUser seckillUser, @RequestParam("goodsId") long goodsId) {
+    public Result<Long> doSeckill(Model model, @PathVariable("path") String path, SeckillUser seckillUser, @RequestParam("goodsId") long goodsId) {
 
         // 检查path
-        boolean check = seckillService.checkPath(seckillUser, path, goodsId );
+        boolean check = seckillService.checkPath(seckillUser, path, goodsId);
 
         if (!check) {
 
@@ -154,14 +158,37 @@ public class SeckillController implements InitializingBean {
         return Result.success(result);
     }
 
-    @RequestMapping(value="/path",method = {RequestMethod.GET})
+    @RequestMapping(value = "/path", method = {RequestMethod.GET})
     @ResponseBody
-    public Result<String> seckillPath (SeckillUser user, @RequestParam("goodsId") long goodsId){
+    public Result<String> seckillPath(SeckillUser user, @RequestParam("goodsId") long goodsId, @RequestParam("verifyCode") int verifyCode) {
         if (user == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
         }
+        boolean check = seckillService.checkVerifyCode(user, goodsId, verifyCode);
+        if (!check) {
+            return Result.error(CodeMsg.REQUEST_ILLEGAL);
+        }
         String path = seckillService.createSeckillPath(user, goodsId);
-          return Result.success(path);
+        return Result.success(path);
+    }
+
+    @RequestMapping(value = "/verifyCode", method = {RequestMethod.GET})
+    @ResponseBody
+    public Result<String> getSeckillVerifyCode(HttpServletResponse response, SeckillUser user, @RequestParam("goodsId") long goodsId) {
+        if (user == null) {
+            return Result.error(CodeMsg.SESSION_ERROR);
+        }
+        try {
+            BufferedImage image = seckillService.createVerifyCode(user, goodsId);
+            OutputStream out = response.getOutputStream();
+            ImageIO.write(image, "JPEG", out);
+            out.flush();
+            out.close();
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(CodeMsg.SECKILL_ERROR);
+        }
     }
 
 }

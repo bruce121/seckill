@@ -14,7 +14,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MQConfig {
-
+    /**
+     * 使用Docker启动Rabbit
+     * docker run --rm  -d --name some-rabbit -p 15672:15672 -p 5672:5672 rabbitmq:3-management
+     *
+     */
     public static final String SECKILL_QUEUE = "seckill.queue";
     public static final String QUEUE = "queue";
     public static final String TOPIC_QUEUE1 = "topic.queue1";
